@@ -269,6 +269,10 @@
             // 
             // dataGridView_Inaccessibility
             // 
+            this.dataGridView_Inaccessibility.AllowUserToAddRows = false;
+            this.dataGridView_Inaccessibility.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.dataGridView_Inaccessibility.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dataGridView_Inaccessibility.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.ColStartDateInaccessibility,
@@ -330,6 +334,7 @@
             this.Controls.Add(this.label1);
             this.Name = "Form_ElectronicNotificators";
             this.Text = "Генератор ЭЧ Уведомлений";
+            this.Load += new System.EventHandler(this.Form_ElectronicNotificators_Load);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView_Inaccessibility)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();

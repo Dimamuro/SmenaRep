@@ -366,12 +366,13 @@
             // 
             // label2
             // 
+            this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(632, 11);
+            this.label2.Location = new System.Drawing.Point(659, 11);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(76, 13);
+            this.label2.Size = new System.Drawing.Size(49, 13);
             this.label2.TabIndex = 2;
-            this.label2.Text = "В разработке";
+            this.label2.Text = "В альфе";
             // 
             // label4_ECHZone
             // 
@@ -384,7 +385,9 @@
             // 
             // textBox4_ECHZone
             // 
-            this.textBox4_ECHZone.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.textBox4_ECHZone.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.textBox4_ECHZone.Location = new System.Drawing.Point(3, 35);
             this.textBox4_ECHZone.Multiline = true;
             this.textBox4_ECHZone.Name = "textBox4_ECHZone";
@@ -393,6 +396,7 @@
             // 
             // button4_ECHZONE
             // 
+            this.button4_ECHZONE.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.button4_ECHZONE.Location = new System.Drawing.Point(714, 6);
             this.button4_ECHZONE.Name = "button4_ECHZONE";
             this.button4_ECHZONE.Size = new System.Drawing.Size(75, 23);

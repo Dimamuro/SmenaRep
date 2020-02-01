@@ -34,24 +34,38 @@ namespace WindowsFormsApp1
             //incDataBase.InsertPostgreBD(fileReader.DTFromFile(), namebd);
 
             //DataGridView_Incidents.DataSource = incDataBase.SelectPstgressBD(namebd);
+            try
+            {
+                (DataTable dtfromfile, string filename) = fileReader.DTFromFile();
+                if(filename != "" && dtfromfile != null)
+                {
+                    label1.Text = "Отчет от " + (File.GetLastWriteTime(filename).ToString());
+                    DataGridView_Incidents.DataSource = dtfromfile;
+
+                    ReportTextForSmena reportTextForSmena = new ReportTextForSmena();
+
+                    //MessageBox.Show(report.Length.ToString());
+
+                    textBox_SmenaReport.Text = reportTextForSmena.HalfSmenaReport(dtfromfile).Replace("\n", Environment.NewLine);
+                    textBox_SmenaDayReport.Text = reportTextForSmena.FullSmenaReport(dtfromfile).Replace("\n", Environment.NewLine);
+                    FillcomboBox_ValueFilter("РАБОЧАЯ_ГРУППА", comboBox3Zone);
+                }
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show("File1 имеет ошибки в методе Form1_Load: " + ex.Message);
+            }
             
-            (DataTable dtfromfile, string filename) = fileReader.DTFromFile();
-            label1.Text = "Отчет от " + (File.GetLastWriteTime(filename).ToString());
-            DataGridView_Incidents.DataSource = dtfromfile;
-
-            ReportTextForSmena reportTextForSmena = new ReportTextForSmena();
-
-            //MessageBox.Show(report.Length.ToString());
-
-            textBox_SmenaReport.Text = reportTextForSmena.HalfSmenaReport(dtfromfile).Replace("\n", Environment.NewLine);
-            textBox_SmenaDayReport.Text = reportTextForSmena.FullSmenaReport(dtfromfile).Replace("\n", Environment.NewLine);
-            FillcomboBox_ValueFilter("РАБОЧАЯ_ГРУППА", comboBox3Zone);
         }
 
         private void button4_ECHZONE_Click(object sender, EventArgs e)
         {
             if(textBox4_ECHZone.Text != "")
             {
+                this.Hide();
+                Form_ElectronicNotificators form_ElectronicNotificators = new Form_ElectronicNotificators(textBox4_ECHZone.Text);
+                form_ElectronicNotificators.ShowDialog();
+                this.Visible = true;
                 //var electrotext = new object []
             }
         }

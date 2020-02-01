@@ -37,7 +37,7 @@ namespace WindowsFormsApp1
             tmptext += FormatTextForSmena(smenaCategory.IncidensFromPreviousSmenaEnd);
             tmptext += "\n2. Инциденты, переданные по смене (не решенные).\n";
             tmptext += FormatTextForSmena(smenaCategory.IncidensFromPreviousSmenaNoEnd);
-            tmptext += "\n3. Инциденты по питанию.\n";
+            tmptext += "\n3. Инциденты по электропитанию.\n";
             try
             {
                 tmpdt = (smenaCategory.ClosedIncidentsForSmena.AsEnumerable().Where(row => (row.Field<string>("ЭЛЕКТРОЭНЕРГИЯ") == "True"))).CopyToDataTable();
@@ -101,7 +101,7 @@ namespace WindowsFormsApp1
             tmptext += FormatTextForSmena(smenaCategory.IncidensFromPreviousSmenaEnd);
             tmptext += "\n2. Инциденты, переданные по смене (не решенные).\n";
             tmptext += FormatTextForSmena(smenaCategory.IncidensFromPreviousSmenaNoEnd);
-            tmptext += "\n3. Инциденты по питанию.\n";
+            tmptext += "\n3. Инциденты по электропитанию.\n";
             try
             {
                 tmpdt = (smenaCategory.ClosedIncidentsForSmena24Hours.AsEnumerable().Where(row => (row.Field<string>("ЭЛЕКТРОЭНЕРГИЯ") == "True"))).CopyToDataTable();
@@ -152,43 +152,50 @@ namespace WindowsFormsApp1
 
             try
             {
-                for (int i = 0; i < dt.Rows.Count; i++)
+                if(dt != null)
                 {
-                    string tech = "";
-                    string starttime = "";
-                    string endtime = "";
-                    string comment = "";
+                    for (int i = 0; i < dt.Rows.Count; i++)
+                    {
+                        string tech = "";
+                        string starttime = "";
+                        string endtime = "";
+                        string comment = "";
 
-                    if (dt.Rows[i]["ТЕХНИЧЕСКИЙ"].ToString().Contains("true"))
-                    {
-                        tech = "(ТИ)";
-                    }
-                    if (dt.Rows[i]["ВРЕМЯ_СОЗДАНИЯ"].ToString() != "")
-                    {
-                        starttime = (Convert.ToDateTime(dt.Rows[i]["ВРЕМЯ_СОЗДАНИЯ"]).AddHours(-4)).ToString("HH:mm");
-                    }
-                    if (dt.Rows[i]["ВРЕМЯ_ЗАКРЫТИЯ_В_СМ"].ToString() != "")
-                    {
-                        endtime = (Convert.ToDateTime(dt.Rows[i]["ВРЕМЯ_ЗАКРЫТИЯ_В_СМ"]).AddHours(-4)).ToString("HH:mm");
-                    }
-                    Regex regex = new Regex(@"\d{2}-\d{8}");
-                    if (regex.Match(dt.Rows[i]["РЕШЕНИЕ"].ToString()).Success
-                        || dt.Rows[i]["РЕШЕНИЕ"].ToString().Contains("возможно")
-                        || dt.Rows[i]["СПРАВ_КОРНЕВАЯ_ПРИЧИНА"].ToString() == "")
-                    {
-                        comment = dt.Rows[i]["РЕШЕНИЕ"].ToString();
-                    }
-                    if (comment.Contains("ДО:") && comment.Contains(" ПОСЛЕ:")) { comment = comment.Substring(0, (comment.IndexOf("ДО:"))); }
+                        if (dt.Rows[i]["ТЕХНИЧЕСКИЙ"].ToString().Contains("true"))
+                        {
+                            tech = "(ТИ)";
+                        }
+                        if (dt.Rows[i]["ВРЕМЯ_СОЗДАНИЯ"].ToString() != "")
+                        {
+                            starttime = (Convert.ToDateTime(dt.Rows[i]["ВРЕМЯ_СОЗДАНИЯ"]).AddHours(-4)).ToString("HH:mm");
+                        }
+                        if (dt.Rows[i]["ВРЕМЯ_ЗАКРЫТИЯ_В_СМ"].ToString() != "")
+                        {
+                            endtime = (Convert.ToDateTime(dt.Rows[i]["ВРЕМЯ_ЗАКРЫТИЯ_В_СМ"]).AddHours(-4)).ToString("HH:mm");
+                        }
+                        Regex regex = new Regex(@"\d{2}-\d{8}");
+                        if (regex.Match(dt.Rows[i]["РЕШЕНИЕ"].ToString()).Success
+                            || dt.Rows[i]["РЕШЕНИЕ"].ToString().Contains("возможно")
+                            || dt.Rows[i]["СПРАВ_КОРНЕВАЯ_ПРИЧИНА"].ToString() == "")
+                        {
+                            comment = dt.Rows[i]["РЕШЕНИЕ"].ToString();
+                        }
+                        if (comment.Contains("ДО:") && comment.Contains(" ПОСЛЕ:")) { comment = comment.Substring(0, (comment.IndexOf("ДО:"))); }
 
-                    FormatReport += starttime + " - " + endtime + " " + tech + dt.Rows[i]["НОМЕР"].ToString() +
-                            ". Ст. " + dt.Rows[i]["СТАНЦИЯ"].ToString() + ", " + dt.Rows[i]["УЗЕЛ"].ToString() + ". " +
-                            dt.Rows[i]["СПРАВ_КОРНЕВАЯ_ПРИЧИНА"].ToString() + ". " + comment + "\n";
+                        string tempstr = starttime + " - " + endtime + " " + tech + dt.Rows[i]["НОМЕР"].ToString() +
+                                ". Ст. " + dt.Rows[i]["СТАНЦИЯ"].ToString() + ", " + dt.Rows[i]["УЗЕЛ"].ToString() + ". " +
+                                dt.Rows[i]["СПРАВ_КОРНЕВАЯ_ПРИЧИНА"].ToString() + ". " + comment + "\n";
+                        tempstr = tempstr.Replace(" .", ".");
+                        tempstr = tempstr.Replace("..", ".");
+                        tempstr = tempstr.Replace(",.", ".");
+                        FormatReport += tempstr;
 
+                    }
                 }
             }
             catch(Exception ex)
             {
-
+                MessageBox.Show(ex.ToString());
             }
             
 

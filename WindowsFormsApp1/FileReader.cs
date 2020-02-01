@@ -213,9 +213,13 @@ namespace WindowsFormsApp1
             try
             {
                 smenaCategory.IncidensFromPreviousSmenaNoEnd = (dt.AsEnumerable().Where(row => row.Field<string>("ФАКТИЧЕСКОЕ_ЗАВЕРШЕНИЕ") == ""
-                    && Convert.ToDateTime(row.Field<string>("ВРЕМЯ_СОЗДАНИЯ")) < smenaTime.NowSmenaTime)).CopyToDataTable();
-            //          && row.Field<string>("РАБОЧАЯ_ГРУППА").Contains("КРАСН"))).CopyToDataTable();
-            } catch { }
+                        && Convert.ToDateTime(row.Field<string>("ВРЕМЯ_СОЗДАНИЯ")) < smenaTime.NowSmenaTime
+                        && row.Field<string>("РАБОЧАЯ_ГРУППА").Contains("КРАСН"))).CopyToDataTable();
+                //    smenaCategory.IncidensFromPreviousSmenaNoEnd = (dt.AsEnumerable().Where(row => row.Field<string>("ФАКТИЧЕСКОЕ_ЗАВЕРШЕНИЕ") == ""
+                //        && Convert.ToDateTime(row.Field<string>("ВРЕМЯ_СОЗДАНИЯ")) < smenaTime.NowSmenaTime)).CopyToDataTable();
+                ////          && row.Field<string>("РАБОЧАЯ_ГРУППА").Contains("КРАСН"))).CopyToDataTable();
+            }
+            catch { }
 
             //Инциденты за последние 2 смены
             try
@@ -466,11 +470,34 @@ namespace WindowsFormsApp1
 
         public (DataTable, string) DTFromFile()
         {
+            DataTable dtfromfile = new DataTable();
             string fullfilename = FindLastFile(rootDir, @"export*");
-            DataTable dtfromfile = GetDataTableFromExportFile(fullfilename);
+            if(fullfilename == "")
+            {
+                MessageBox.Show("Фаил не найден укажите путь к файлу");
+                //var fileContent = string.Empty;
+                //var filePath = string.Empty;
 
-            dtfromfile = ExpandDataTableIncident(dtfromfile);
+                using (OpenFileDialog openFileDialog = new OpenFileDialog())
+                {
+                    //openFileDialog.InitialDirectory = "c:\\";
+                    openFileDialog.Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*";
+                    openFileDialog.FilterIndex = 1;
+                    openFileDialog.RestoreDirectory = true;
 
+                    if (openFileDialog.ShowDialog() == DialogResult.OK)
+                    {
+                        //Get the path of specified file
+                        fullfilename = openFileDialog.FileName;
+                    }
+                }
+            }
+
+            if (fullfilename != "")
+            {
+                dtfromfile = GetDataTableFromExportFile(fullfilename);
+                dtfromfile = ExpandDataTableIncident(dtfromfile);
+            }
             //SmenaCategory smenaCategory = IncidentToCategories.GetIncidentToCategoy(dtfromfile);
 
 
