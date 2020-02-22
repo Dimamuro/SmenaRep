@@ -30,6 +30,7 @@ namespace WindowsFormsApp1
 
             string TimeRange = DateTime.Today.ToString();
             DateTime DateInaccssibility = DateTime.Today.AddDays(1);
+            bool DateIsChange = false;
 
             DateTime TimeStart;
             DateTime TimeEnd;
@@ -55,9 +56,9 @@ namespace WindowsFormsApp1
                     if (regex.Match(tmp).Success)
                     {
                         DateInaccssibility = Convert.ToDateTime((tmp.Split(' ').AsEnumerable().Where(obj => regex.Match(obj).Success)).First());
-
+                        DateIsChange = true;
                     }
-                    if (tmpstr == list[list.Length - 1])
+                    if (tmpstr == list[list.Length - 1] && !DateIsChange)
                     {
                         MessageBox.Show("Отсутсвтует дата простоя: " + Environment.NewLine + "Будет -> " + DateInaccssibility.ToString("dd.MM.yy"));
                     }
@@ -154,10 +155,22 @@ namespace WindowsFormsApp1
             }
         }
 
+        private void StartProgram()
+        {
+            dataGridView_Inaccessibility.Rows.Clear();
+            FillElectronicNotificatorForm();
+        }
+
         private void Form_ElectronicNotificators_Load(object sender, EventArgs e)
         {
             textBox_Information.Text = ElectricNotificators;
-            FillElectronicNotificatorForm();
+            StartProgram();
+        }
+
+        private void textBox_Information_TextChanged(object sender, EventArgs e)
+        {
+            ElectricNotificators = textBox_Information.Text;
+            StartProgram();
         }
     }
 }

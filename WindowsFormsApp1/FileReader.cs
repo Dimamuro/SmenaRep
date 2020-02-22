@@ -50,11 +50,8 @@ namespace WindowsFormsApp1
         {
             var location = (Point: "", Station: "");
 
-            //string str = "Описание события: устройство не отвечает по ICMP IP-адрес: 10.95.156.77 Имя устройства: c2950-12.ohr-trud.tch3.ilanskaya.m.krw.rzd Расположение: ОХРАНА-ТРУДА-ТЧР9-ИЛАНСКАЯ-РВЦ3-КРАСН Время возникновения: 06/12/19 12:42 (MSK) Группа ЕСПП: СМЕНА-СТО-КРАСН Полное наименование (из ЭК):  Расположение (из ЭК): ОХРАНА-ТРУДА-ТЧР9-ИЛАНСКАЯ-РВЦ3-КРАСН";
             int startstr = locationstring.IndexOf("Расположение");
             string[] tmpvalue = locationstring.Substring(startstr+14).Split(' ')[0].Split('-');
-            //tmpvalue = tmpvalue[0].Split('-');
-
             
             switch (workgroup)
             {
@@ -70,6 +67,7 @@ namespace WindowsFormsApp1
             }
 
             if (location.Station == "Квосточный") { location.Station = "Красноярск-Восточный"; }
+            if (location.Station == "Ксеверный") { location.Station = "Красноярск-Северный"; }
             if (location.Station == "Конторадсзлобино") { location.Station = "Красноярск-Восточный"; location.Point = "Контора ДС";  }
 
             return location;
@@ -205,7 +203,8 @@ namespace WindowsFormsApp1
             {
                 smenaCategory.IncidensFromPreviousSmenaEnd = (dt.AsEnumerable().Where(row => row.Field<string>("ФАКТИЧЕСКОЕ_ЗАВЕРШЕНИЕ") != ""
                         && Convert.ToDateTime(row.Field<string>("ФАКТИЧЕСКОЕ_ЗАВЕРШЕНИЕ")) >= smenaTime.NowSmenaTime
-                        && Convert.ToDateTime(row.Field<string>("ВРЕМЯ_СОЗДАНИЯ")) < smenaTime.NowSmenaTime)).CopyToDataTable();
+                        && Convert.ToDateTime(row.Field<string>("ВРЕМЯ_СОЗДАНИЯ")) < smenaTime.NowSmenaTime
+                        && row.Field<string>("РАБОЧАЯ_ГРУППА").Contains("КРАСН"))).CopyToDataTable();
             }
             catch { }
 
@@ -215,9 +214,6 @@ namespace WindowsFormsApp1
                 smenaCategory.IncidensFromPreviousSmenaNoEnd = (dt.AsEnumerable().Where(row => row.Field<string>("ФАКТИЧЕСКОЕ_ЗАВЕРШЕНИЕ") == ""
                         && Convert.ToDateTime(row.Field<string>("ВРЕМЯ_СОЗДАНИЯ")) < smenaTime.NowSmenaTime
                         && row.Field<string>("РАБОЧАЯ_ГРУППА").Contains("КРАСН"))).CopyToDataTable();
-                //    smenaCategory.IncidensFromPreviousSmenaNoEnd = (dt.AsEnumerable().Where(row => row.Field<string>("ФАКТИЧЕСКОЕ_ЗАВЕРШЕНИЕ") == ""
-                //        && Convert.ToDateTime(row.Field<string>("ВРЕМЯ_СОЗДАНИЯ")) < smenaTime.NowSmenaTime)).CopyToDataTable();
-                ////          && row.Field<string>("РАБОЧАЯ_ГРУППА").Contains("КРАСН"))).CopyToDataTable();
             }
             catch { }
 
@@ -393,7 +389,6 @@ namespace WindowsFormsApp1
                                     case "Крайний срок": tmpcolumnname = "КРАЙНИЙ_СРОК"; break;
                                 }
                                 dt.Columns.Add(tmpcolumnname);
-                                //MessageBox.Show(tmpcolumnname);
                             }
                             i++;
                         }
@@ -441,14 +436,13 @@ namespace WindowsFormsApp1
                 foreach(string timeproperty in timeproperties)
                 {
                     if (dt.Rows[i][timeproperty].ToString() != "") dt.Rows[i][timeproperty] = Convert.ToDateTime(dt.Rows[i][timeproperty]);
-                    //if (dt.Rows[i][timeproperty].ToString() == "") dt.Rows[i][timeproperty] = DateTime.Today;
                 }
                 if(shortdescription.Contains("Событие СМ ITNM"))
                 {
                     var location = IncLocation.GetIncLocation(locationstring, workgroup);
+                    dt.Rows[i].SetField("ЭЛЕКТРОЭНЕРГИЯ", iselectric.ToString()); 
                     dt.Rows[i].SetField("СТАНЦИЯ", location.Station);
                     dt.Rows[i].SetField("УЗЕЛ", location.Point);
-                    dt.Rows[i].SetField("ЭЛЕКТРОЭНЕРГИЯ", iselectric.ToString());
 
                     var list = shortdescription.ToString().Split(' '); //dt.Rows[i].SetField("КРАТКОЕ_ОПИСАНИЕ", shortdescription.ToString().Split(' '));
                     dt.Rows[i].SetField("IP",list[list.Count() - 1].ToString().Replace("IP:", "").ToString());
@@ -457,9 +451,12 @@ namespace WindowsFormsApp1
                 else
                 {
                     dt.Rows[i].SetField("ТЕХНИЧЕСКИЙ", "false");
+
                     dt.Rows[i].SetField("ЭЛЕКТРОЭНЕРГИЯ", "False");
                     dt.Rows[i].SetField("СТАНЦИЯ", "null");
                     dt.Rows[i].SetField("УЗЕЛ", "null");
+                    dt.Rows[i].SetField("IP", "null");
+                    dt.Rows[i].SetField("DomainName", "null");
                 }
             }
 
@@ -475,19 +472,16 @@ namespace WindowsFormsApp1
             if(fullfilename == "")
             {
                 MessageBox.Show("Фаил не найден укажите путь к файлу");
-                //var fileContent = string.Empty;
-                //var filePath = string.Empty;
+ 
 
                 using (OpenFileDialog openFileDialog = new OpenFileDialog())
                 {
-                    //openFileDialog.InitialDirectory = "c:\\";
                     openFileDialog.Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*";
                     openFileDialog.FilterIndex = 1;
                     openFileDialog.RestoreDirectory = true;
 
                     if (openFileDialog.ShowDialog() == DialogResult.OK)
                     {
-                        //Get the path of specified file
                         fullfilename = openFileDialog.FileName;
                     }
                 }
@@ -498,12 +492,6 @@ namespace WindowsFormsApp1
                 dtfromfile = GetDataTableFromExportFile(fullfilename);
                 dtfromfile = ExpandDataTableIncident(dtfromfile);
             }
-            //SmenaCategory smenaCategory = IncidentToCategories.GetIncidentToCategoy(dtfromfile);
-
-
-
-            //IncidentsCounters incidentsCountersSmena24Hours = IncidentsCountersProc.GetIncidentsCounters(smenaCategory.Smena24Hours);
-            //IncidentsCounters incidentsCountersForAll = IncidentsCountersProc.GetIncidentsCounters(dtfromfile);
 
 
             return (dtfromfile, fullfilename);

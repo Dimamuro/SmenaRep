@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,15 +10,48 @@ using Npgsql;
 
 namespace WindowsFormsApp1
 {
+    class WhenBDChange
+    {
+        private void ChangeOldFile(string filename, DateTime dt)
+        {
+            using (StreamWriter sw = new StreamWriter(filename, false, System.Text.Encoding.Default))
+            {
+                sw.WriteLine(dt.ToString());
+            }
+        }
+
+        public (bool, DateTime) FileIsNew(string NewFile)
+        {
+            bool FileIsNew = false;
+            var NewFileDate = File.GetLastWriteTime(NewFile);
+            var OldFileDate = NewFileDate;
+            string OldFile = "BDChanged.info";
+
+            if (File.Exists(OldFile))
+                OldFileDate = File.GetLastWriteTime(OldFile);
+            if(OldFileDate <= NewFileDate)
+            {
+                FileIsNew = true;
+                ChangeOldFile(OldFile, NewFileDate);
+                OldFileDate = File.GetLastWriteTime(OldFile);
+
+                //MessageBox.Show("База была изменена! \n старая запись: " + OldFileDate.ToString() + " \n новая запись: " + NewFileDate.ToString());
+            }
+            
+            //else { MessageBox.Show("База НЕ изменена! \n старая запись: " + OldFileDate.ToString() + " \n новая запись: " + NewFileDate.ToString()); }
+
+            return (FileIsNew, OldFileDate);
+        }
+    }
     class IncDataBase
     {
         private static string npgsqlconnstring = String.Format("Server={0};Port={1};" +
                 "User Id={2};Password={3};Database={4};",
-                "1.1.1.1", 5432, "User", "Password", "Database");
+                "10.89.251.88", 5432, "collector", "ghfdjcelbt", "ups");
         private NpgsqlConnection npgsqlconn = new NpgsqlConnection(npgsqlconnstring);
 
         private NpgsqlCommand npgsqlcmd;
-        //private DataTable npgsqldt;
+        
         private List<string> ColumnNames = new List<string> {
             "НОМЕР",
             "ЭК",
@@ -73,7 +107,7 @@ namespace WindowsFormsApp1
                 "СТАНЦИЯ"                               + str +
                 "УЗЕЛ"                                  + str +
                 "IP"                                    + str +
-                "DOMAIN_NAME"                           + str +
+                "DOMAINNAME"                           + str +
                 "ИСПОЛНИТЕЛЬ"                           + str +
                 "КРАЙНИЙ_СРОК"                          + str + //strdate +
                 "ИНИЦИАТОР"                             + str +
@@ -141,29 +175,39 @@ namespace WindowsFormsApp1
 
         private string PostgresInsertUPSListOnline(string namedb, string[] columnnames, string[] values)
         {
-            string comma = ", ";
-
-            string list = "";
-            string valuelist = "";
-
-            for (int i = 0; i < values.Length; i++)
+            try
             {
-                if(values[i] != null)
+                string comma = ", ";
+
+                string list = "";
+                string valuelist = "";
+
+                for (int i = 0; i < values.Length; i++)
                 {
-                    list += columnnames[i] + comma;
-                    valuelist += "$$" + values[i] + "$$" + comma;
+                    if (values[i] != null)
+                    {
+                        list += columnnames[i] + comma;
+                        valuelist += "$$" + values[i] + "$$" + comma;
+                    }
+                    //else { MessageBox.Show("Пустая строка в " + columnnames[i]); }
                 }
+                list = list.Substring(0, list.Length - 2);
+                valuelist = valuelist.Substring(0, valuelist.Length - 2);
+
+                string sqlinsertupslist = "INSERT INTO " +
+                    namedb + "(" + list + ") " +
+                    "VALUES(" + valuelist + ") " +
+                    "ON CONFLICT (НОМЕР) DO UPDATE " +
+                    "SET (" + list + ") = (" + valuelist + ")";
+
+                return sqlinsertupslist;
             }
-            list = list.Substring(0, list.Length - 2);
-            valuelist = valuelist.Substring(0, valuelist.Length - 2);
-
-            string sqlinsertupslist = "INSERT INTO " +
-                namedb + "(" + list + ") " +
-                "VALUES(" + valuelist + ") " +
-                "ON CONFLICT (НОМЕР) DO UPDATE " +
-                "SET (" + list + ") = (" + valuelist + ")";
-
-            return sqlinsertupslist;
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error PostgresInsertUPSListOnline: " + ex.Message);
+                return "";
+            }
+            
         }
 
         public void CreatePostgreDT(string namedb)
@@ -191,28 +235,53 @@ namespace WindowsFormsApp1
             string[] columnnames = dt.Columns.Cast<DataColumn>()
                                             .Select(x => x.ColumnName)
                                             .ToArray();
-            
+
             try
             {
                 npgsqlconn.Open();
                 foreach (DataRow row in dt.Rows)
                 {
+
+
+                    //MessageBox.Show(sql);
+
                     string[] values = row.ItemArray.Cast<string>().ToArray();
                     string sql = PostgresInsertUPSListOnline(namedb, columnnames, values);
-                    //MessageBox.Show(sql);
                     npgsqlcmd = new NpgsqlCommand(sql, npgsqlconn);
                     npgsqlcmd.ExecuteNonQuery();
-
                 }
                 npgsqlconn.Close();
             }
             catch (Exception ex)
             {
                 npgsqlconn.Close();
-                //Exceptions.WriteErrorMessage(ex, "InsertPostgreBD");
                 MessageBox.Show("Error InsertPostgreBD: " + ex.Message);
             }
         }
+
+
+
+        //try
+        //{
+        //    npgsqlconn.Open();
+        //    foreach (DataRow row in dt.Rows)
+        //    {
+        //        string[] values = row.ItemArray.Cast<string>().ToArray();
+        //        string sql = PostgresInsertUPSListOnline(namedb, columnnames, values);
+        //        //MessageBox.Show(sql);
+
+        //        npgsqlcmd = new NpgsqlCommand(sql, npgsqlconn);
+        //        npgsqlcmd.ExecuteNonQuery();
+        //    }
+        //    npgsqlconn.Close();
+        //}
+        //catch (Exception ex)
+        //{
+        //    npgsqlconn.Close();
+        //    //Exceptions.WriteErrorMessage(ex, "InsertPostgreBD");
+        //    MessageBox.Show("Error InsertPostgreBD: " + ex.Message);
+        //}
+
 
         public DataTable SelectPstgressBD(string namedb)
         {
