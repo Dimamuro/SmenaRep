@@ -13,7 +13,7 @@ namespace WindowsFormsApp1
     {
         private static string npgsqlconnstring = String.Format("Server={0};Port={1};" +
                 "User Id={2};Password={3};Database={4};",
-                "10.89.251.88", 5432, "collector", "ghfdjcelbt", "ups");
+                "1.1.1.1", 5432, "User", "Password", "Database");
         private NpgsqlConnection npgsqlconn = new NpgsqlConnection(npgsqlconnstring);
 
         private NpgsqlCommand npgsqlcmd;
