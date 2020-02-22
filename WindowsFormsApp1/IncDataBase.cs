@@ -34,11 +34,8 @@ namespace WindowsFormsApp1
                 FileIsNew = true;
                 ChangeOldFile(OldFile, NewFileDate);
                 OldFileDate = File.GetLastWriteTime(OldFile);
-
-                //MessageBox.Show("База была изменена! \n старая запись: " + OldFileDate.ToString() + " \n новая запись: " + NewFileDate.ToString());
             }
             
-            //else { MessageBox.Show("База НЕ изменена! \n старая запись: " + OldFileDate.ToString() + " \n новая запись: " + NewFileDate.ToString()); }
 
             return (FileIsNew, OldFileDate);
         }
@@ -47,7 +44,7 @@ namespace WindowsFormsApp1
     {
         private static string npgsqlconnstring = String.Format("Server={0};Port={1};" +
                 "User Id={2};Password={3};Database={4};",
-                "10.89.251.88", 5432, "collector", "ghfdjcelbt", "ups");
+                "1.1.1.1", 5432, "User", "Password", "Database");
         private NpgsqlConnection npgsqlconn = new NpgsqlConnection(npgsqlconnstring);
 
         private NpgsqlCommand npgsqlcmd;
